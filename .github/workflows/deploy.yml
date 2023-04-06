@@ -14,17 +14,17 @@ jobs:
       - uses: actions/checkout@v1
       - name: Set up JDK
         uses: actions/setup-java@v1
-	with:
+        with:
           java-version: '17'
       - name: Build with Maven
         run: mvn -B package -DskipTests --file pom.xml
       - name: Upload JAR
         uses: actions/upload-artifact@v2
-	with:
+        with:
           name: artifact
           path: target/api_produtos-1.0.jar
   deploy:
-    need: build
+    needs: build
     name: Deploy
     runs-on: ubuntu-latest
     steps:
@@ -33,14 +33,14 @@ jobs:
       - name: Download JAR
         uses: actions/download-artifact@v2
         with:
-          name : artifact
-      #Deploy para o AWS
-      - name: Deploy to EBS
+          name: artifact
+      #Deploy the artifact (JAR) into AWS Beanstalk
+      - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v2
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-	  aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          use_existing_version_if_avaiable: false
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          use_existing_version_if_available: false
           application_name: api_produtos
           environment_name: Apiprodutos-env
           version_label: ${{github.SHA}}

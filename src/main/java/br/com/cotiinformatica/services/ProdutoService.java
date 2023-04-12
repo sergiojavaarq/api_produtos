@@ -2,35 +2,83 @@ package br.com.cotiinformatica.services;
 
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.cotiinformatica.dtos.commands.ProdutoCreateCommand;
 import br.com.cotiinformatica.dtos.commands.ProdutoDeleteCommand;
 import br.com.cotiinformatica.dtos.commands.ProdutoUpdateCommand;
 import br.com.cotiinformatica.dtos.queries.ProdutosDto;
+import br.com.cotiinformatica.entities.Produto;
+import br.com.cotiinformatica.infra.cache.ProdutosCache;
+import br.com.cotiinformatica.infra.repositories.CategoriaRepository;
+import br.com.cotiinformatica.infra.repositories.ProdutoRepository;
 
 @Service
 public class ProdutoService {
 
-	public void create(ProdutoCreateCommand command) {
-		// TODO
+	@Autowired
+	private ProdutoRepository produtoRepository;
+
+	@Autowired
+	private CategoriaRepository categoriaRepository;
+
+	@Autowired
+	private ProdutosCache produtosCache;
+
+	public ProdutosDto create(ProdutoCreateCommand command) {
+
+		ModelMapper modelMapper = new ModelMapper();
+
+		Produto produto = modelMapper.map(command, Produto.class);
+		produto.setCategoria(categoriaRepository.findById(command.getIdCategoria()).get());
+
+		produtoRepository.save(produto);
+
+		ProdutosDto dto = modelMapper.map(produto, ProdutosDto.class);
+		produtosCache.save(dto);
+
+		return dto;
 	}
 
-	public void update(ProdutoUpdateCommand command) {
-		// TODO
+	public ProdutosDto update(ProdutoUpdateCommand command) {
+
+		ModelMapper modelMapper = new ModelMapper();
+
+		Produto produto = produtoRepository.findById(command.getId()).get();
+
+		produto.setNome(command.getNome());
+		produto.setPreco(command.getPreco());
+		produto.setQuantidade(command.getQuantidade());
+		produto.setCategoria(categoriaRepository.findById(command.getIdCategoria()).get());
+
+		produtoRepository.save(produto);
+
+		ProdutosDto dto = modelMapper.map(produto, ProdutosDto.class);
+		produtosCache.save(dto);
+
+		return dto;
 	}
 
-	public void delete(ProdutoDeleteCommand command) {
-		// TODO
+	public ProdutosDto delete(ProdutoDeleteCommand command) {
+
+		ModelMapper modelMapper = new ModelMapper();
+
+		Produto produto = produtoRepository.findById(command.getId()).get();
+		produtoRepository.delete(produto);
+
+		ProdutosDto dto = modelMapper.map(produto, ProdutosDto.class);
+		produtosCache.delete(dto);
+
+		return dto;
 	}
 
 	public List<ProdutosDto> findAll() {
-		// TODO
-		return null;
+		return produtosCache.findAll();
 	}
 
 	public ProdutosDto findById(Integer id) {
-		// TODO
-		return null;
+		return produtosCache.findById(id).get();
 	}
 }

@@ -27,9 +27,10 @@ public class ProdutoService {
 	@Autowired
 	private ProdutosCache produtosCache;
 
-	public ProdutosDto create(ProdutoCreateCommand command) {
+	@Autowired
+	private ModelMapper modelMapper;
 
-		ModelMapper modelMapper = new ModelMapper();
+	public ProdutosDto create(ProdutoCreateCommand command) {
 
 		Produto produto = modelMapper.map(command, Produto.class);
 		produto.setCategoria(categoriaRepository.findById(command.getIdCategoria()).get());
@@ -43,8 +44,6 @@ public class ProdutoService {
 	}
 
 	public ProdutosDto update(ProdutoUpdateCommand command) {
-
-		ModelMapper modelMapper = new ModelMapper();
 
 		Produto produto = produtoRepository.findById(command.getId()).get();
 
@@ -62,8 +61,6 @@ public class ProdutoService {
 	}
 
 	public ProdutosDto delete(ProdutoDeleteCommand command) {
-
-		ModelMapper modelMapper = new ModelMapper();
 
 		Produto produto = produtoRepository.findById(command.getId()).get();
 		produtoRepository.delete(produto);
